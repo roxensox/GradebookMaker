@@ -1,5 +1,6 @@
 import ezsheets, time
 
+# This function loads the master class roster file using the roster's url and user-selected title
 def loadRoster(rosterurl,title):
     print('loading roster...')
     sourceRoster = ezsheets.Spreadsheet(rosterurl)
@@ -11,6 +12,7 @@ def loadRoster(rosterurl,title):
     print('roster loaded')
     return returnroster
 
+# This function makes the attendance book using the roster object, attendance template and a pre-initialized target wb
 def makeAttendance(roster,template,target):
     print('working on attendance book...')
     sessDict = {}
@@ -37,6 +39,7 @@ def makeAttendance(roster,template,target):
     print('attendance book generated')
     return target
 
+# Does the same as the function above, but for assignments
 def makeAssignment(roster,template,target):
     print('working on assignment book...')
     gradelevels = []
@@ -61,6 +64,7 @@ def makeAssignment(roster,template,target):
         target[sec].index = 0
     return target
 
+# Does the same as the above, but also populates the grading components with formulas that link to the correct sources
 def makeGradebook(roster, template, target, attendance, assignment):
     print('working on gradebook...')
     templatesheet = template[0]
@@ -97,7 +101,7 @@ def makeGradebook(roster, template, target, attendance, assignment):
         targsheet['B2'] = f'=IMPORTRANGE("{classroster.url}","{section}!A1:B")'
     gradebook[0].delete()
 
-
+# Collects the class roster and template urls
 rosterUrl = input('What is the URL of your class roster? ')
 name = input('What is your name? ')
 gradebook_template_url = input('What is the URL for the gradebook template? ')
@@ -105,33 +109,34 @@ attendance_template_url = input('What is the URL for the attendance template? ')
 assignment_template_url = input('What is the URL for the assignment template? ')
 classroster = loadRoster(rosterUrl,name)
 
+# Loads the template files
 print('loading gradebook template...')
 gradebook_template = ezsheets.Spreadsheet(gradebook_template_url)
 print('gradebook template loaded')
-
 print('loading attendance template...')
 attendance_template = ezsheets.Spreadsheet('https://docs.google.com/spreadsheets/d/1QEZiPci12tvcVtf9i6nam8NiUAVUreg7QgvyTi-xVjc/edit#gid=1104872665')
 print('attendance template loaded')
-
 print('loading assignment template...')
 assignment_template = ezsheets.Spreadsheet('https://docs.google.com/spreadsheets/d/1fQM6h5MA246Ewn2rmjmeVjpzWqRYvTu2ZiDjPZce2Hs/edit#gid=0')
 print('assignment template loaded')
 
+# Initializes the target files
 print('initializing gradebook...')
 gradebook = ezsheets.createSpreadsheet(f'{name}_GradeBook')
 print('gradebook initialized')
-
 print('initializing attendance book...')
 attendance_target = ezsheets.createSpreadsheet(f'{name}_Attendance')
 attendanceUrl = attendance_target.url
 print('attendance book initialized')
-
 print('initializing assignment book...')
 assignment_target = ezsheets.createSpreadsheet(f'{name}_Assignments')
 assignmentUrl = assignment_target.url
 print('assignment book initialized')
 
+# Makes the attendance and assignment workbooks
 attendsheet = makeAttendance(classroster,attendance_template,attendance_target)
 assignsheet = makeAssignment(classroster,assignment_template,assignment_target)
+
+# Takes the attendance and assignment wb objects and creates the gradebook
 makeGradebook(classroster,gradebook_template,gradebook,attendsheet,assignsheet)
 print('done.')
