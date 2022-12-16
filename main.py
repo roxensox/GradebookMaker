@@ -1,4 +1,4 @@
-import ezsheets, time
+import ezsheets
 
 # This function loads the master class roster file using the roster's url and user-selected title
 def loadRoster(rosterurl,title):
