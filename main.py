@@ -72,7 +72,7 @@ def makeGradebook(roster, template, target, attendance, assignment):
         rows = roster[section].rowCount + 1
         templatesheet.copyTo(target)
         target['Copy of TEMPLATE'].title = section
-        targsheet = gradebook[section]
+        targsheet = target[section]
         targsheet.rowCount = rows
         rowslist = [targsheet.getRow(1)]
         for rownum in range(2, rows + 1):
@@ -98,45 +98,41 @@ def makeGradebook(roster, template, target, attendance, assignment):
             rowlist.append(f'=SUM(T{rownum},R{rownum})')
             rowslist.append(rowlist)
         targsheet.updateRows(rowslist)
-        targsheet['B2'] = f'=IMPORTRANGE("{classroster.url}","{section}!A1:B")'
-    gradebook[0].delete()
+        targsheet['B2'] = f'=IMPORTRANGE("{roster.url}","{section}!A1:B")'
+    target[0].delete()
 
-# Collects the class roster and template urls
-rosterUrl = input('What is the URL of your class roster? ')
-name = input('What is your name? ')
-gradebook_template_url = input('What is the URL for the gradebook template? ')
-attendance_template_url = input('What is the URL for the attendance template? ')
-assignment_template_url = input('What is the URL for the assignment template? ')
-classroster = loadRoster(rosterUrl,name)
+def main(name, rosterUrl, gradebook_template_url,attendance_template_url,assignment_template_url):
+    # Collects the class roster and template urls
+    classroster = loadRoster(rosterUrl,name)
 
-# Loads the template files
-print('loading gradebook template...')
-gradebook_template = ezsheets.Spreadsheet(gradebook_template_url)
-print('gradebook template loaded')
-print('loading attendance template...')
-attendance_template = ezsheets.Spreadsheet('https://docs.google.com/spreadsheets/d/1QEZiPci12tvcVtf9i6nam8NiUAVUreg7QgvyTi-xVjc/edit#gid=1104872665')
-print('attendance template loaded')
-print('loading assignment template...')
-assignment_template = ezsheets.Spreadsheet('https://docs.google.com/spreadsheets/d/1fQM6h5MA246Ewn2rmjmeVjpzWqRYvTu2ZiDjPZce2Hs/edit#gid=0')
-print('assignment template loaded')
+    # Loads the template files
+    print('loading gradebook template...')
+    gradebook_template = ezsheets.Spreadsheet(gradebook_template_url)
+    print('gradebook template loaded')
+    print('loading attendance template...')
+    attendance_template = ezsheets.Spreadsheet(attendance_template_url)
+    print('attendance template loaded')
+    print('loading assignment template...')
+    assignment_template = ezsheets.Spreadsheet(assignment_template_url)
+    print('assignment template loaded')
 
-# Initializes the target files
-print('initializing gradebook...')
-gradebook = ezsheets.createSpreadsheet(f'{name}_GradeBook')
-print('gradebook initialized')
-print('initializing attendance book...')
-attendance_target = ezsheets.createSpreadsheet(f'{name}_Attendance')
-attendanceUrl = attendance_target.url
-print('attendance book initialized')
-print('initializing assignment book...')
-assignment_target = ezsheets.createSpreadsheet(f'{name}_Assignments')
-assignmentUrl = assignment_target.url
-print('assignment book initialized')
+    # Initializes the target files
+    print('initializing gradebook...')
+    gradebook = ezsheets.createSpreadsheet(f'{name}_GradeBook')
+    print('gradebook initialized')
+    print('initializing attendance book...')
+    attendance_target = ezsheets.createSpreadsheet(f'{name}_Attendance')
+    attendanceUrl = attendance_target.url
+    print('attendance book initialized')
+    print('initializing assignment book...')
+    assignment_target = ezsheets.createSpreadsheet(f'{name}_Assignments')
+    assignmentUrl = assignment_target.url
+    print('assignment book initialized')
 
-# Makes the attendance and assignment workbooks
-attendsheet = makeAttendance(classroster,attendance_template,attendance_target)
-assignsheet = makeAssignment(classroster,assignment_template,assignment_target)
+    # Makes the attendance and assignment workbooks
+    attendsheet = makeAttendance(classroster,attendance_template,attendance_target)
+    assignsheet = makeAssignment(classroster,assignment_template,assignment_target)
 
-# Takes the attendance and assignment wb objects and creates the gradebook
-makeGradebook(classroster,gradebook_template,gradebook,attendsheet,assignsheet)
-print('done.')
+    # Takes the attendance and assignment wb objects and creates the gradebook
+    makeGradebook(classroster,gradebook_template,gradebook,attendsheet,assignsheet)
+    print('done.')
