@@ -41,23 +41,30 @@ def makeAssignment(roster,template,target):
         for i in [1,2,3]:
             target.createSheet(f'M{l}Pre-Assign{i}')
             target.createSheet(f'M{l}Post-Assign{i}')
+
+    # Make a template for each grade level using the formulas below to populate the fields to save requests
+    for l in gradelevels:
+        template[1].copyTo(target)
+        target['Copy of ASSIGNMENTS_TEMPLATE'].title = f'M{l}_Template'
+        for i in range(3,50):
+            # Put score calculation in pre-midterm sections
+            target[sec][f'D{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{l}Pre-Assign1'!$C:$D,2,FALSE)/$D$2,0)*10,0)"
+            target[sec][f'E{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{l}Pre-Assign2'!$C:$D,2,FALSE)/$E$2,0)*10,0)"
+            target[sec][f'F{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{l}Pre-Assign3'!$C:$D,2,FALSE)/$F$2,0)*10,0)"
+            # Put score calculation in post-midterm sections
+            target[sec][f'N{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{l}Post-Assign1'!$C:$D,2,FALSE)/$N$2,0)*10,0)"
+            target[sec][f'O{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{l}Post-Assign2'!$C:$D,2,FALSE)/$O$2,0)*10,0)"
+            target[sec][f'P{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{l}Post-Assign3'!$C:$D,2,FALSE)/$P$2,0)*10,0)"
     # Iterate through each class section and fill the fields in the template
     for sec in roster.sheetTitles:
         rows = roster[sec].rowCount+2
-        template[1].copyTo(target)
-        target['Copy of ASSIGNMENTS_TEMPLATE'].title = sec
+        target[f'M{sec[0]}_Template'].copyTo(target)
+        target[f'Copy of M{sec[0]}'].title = sec
         target[sec]['B3'] = f'=IMPORTRANGE("{roster.url}","{sec}!A:B")'
         target[sec].rowCount = rows
-        for i in range (3,rows+1):
-            # Put score calculation in pre-midterm sections
-            target[sec][f'D{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Pre-Assign1'!$C:$D,2,FALSE)/$D$2,0)*10,0)"
-            target[sec][f'E{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Pre-Assign2'!$C:$D,2,FALSE)/$E$2,0)*10,0)"
-            target[sec][f'F{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Pre-Assign3'!$C:$D,2,FALSE)/$F$2,0)*10,0)"
-            # Put score calculation in post-midterm sections
-            target[sec][f'N{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Post-Assign1'!$C:$D,2,FALSE)/$N$2,0)*10,0)"
-            target[sec][f'O{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Post-Assign2'!$C:$D,2,FALSE)/$O$2,0)*10,0)"
-            target[sec][f'P{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Post-Assign3'!$C:$D,2,FALSE)/$P$2,0)*10,0)"
     target[0].delete()
+    for l in gradelevels:
+        target[f'M{l}_Template'].delete()
     seclist = list(roster.sheetTitles)
     seclist.reverse()
     for sec in seclist:
