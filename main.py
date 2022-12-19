@@ -1,4 +1,4 @@
-import ezsheets
+import ezsheets, session_checker
 
 # This function loads the master class roster file using the roster's url and user-selected title
 def loadRoster(rosterurl,title):
@@ -16,15 +16,16 @@ def loadRoster(rosterurl,title):
 def makeAttendance(roster,template,target):
     print('working on attendance book...')
     sessDict = {}
-    for sec in roster.sheetTitles:
-        check = True
-        while check:
-            sessions = input(f'How many times per week does {sec} meet? (1 or 2) ')
-            if sessions != '1' and sessions != '2':
-                print('invalid input. Only 1 or 2 accepted.')
-            else:
-                sessDict[sec] = sessions
-                check = False
+    sessDict = session_checker.session_checker(roster.sheetTitles)
+    #for sec in roster.sheetTitles:
+    #    check = True
+    #    while check:
+    #        sessions = input(f'How many times per week does {sec} meet? (1 or 2) ')
+    #        if sessions != '1' and sessions != '2':
+    #            print('invalid input. Only 1 or 2 accepted.')
+    #        else:
+    #            sessDict[sec] = sessions
+    #            check = False
     for sec in roster.sheetTitles:
         rows = roster[sec].rowCount+2
         if sessDict[sec] == '1':
@@ -33,7 +34,7 @@ def makeAttendance(roster,template,target):
         elif sessDict[sec] == '2':
             template[1].copyTo(target)
             target['Copy of 32Class'].title = sec
-        target[sec]['B3'] = f'=IMPORTRANGE("{roster.url}","{sec}!A1:B")'
+        target[sec]['B3'] = f'=IMPORTRANGE("{roster.url}","{sec}!A:B")'
         target[sec].rowCount = rows
     target[0].delete()
     print('attendance book generated')
@@ -54,7 +55,7 @@ def makeAssignment(roster,template,target):
         rows = roster[sec].rowCount+1
         template[0].copyTo(target)
         target['Copy of TEMPLATE'].title = sec
-        target[sec]['B2'] = f'=IMPORTRANGE("{roster.url}","{sec}!A1:B")'
+        target[sec]['B3'] = f'=IMPORTRANGE("{roster.url}","{sec}!A:B")'
         target[sec].rowCount = rows
     target[0].delete()
     print('assignment book generated')
@@ -77,33 +78,38 @@ def makeGradebook(roster, template, target, attendance, assignment):
         rowslist = [targsheet.getRow(1)]
         for rownum in range(2, rows + 1):
             rowlist = [targsheet[f'A{rownum}'], '', '']
-            rowlist.append(f'=ROUNDUP(10*(1-(VLOOKUP(B{rownum},IMPORTRANGE("{attendance.url}","{section}!B2:I"),3,FALSE)/VLOOKUP(B2,IMPORTRANGE("{attendance.url}","{section}!B2:I"),6,FALSE))))')
-            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B2:Z"),6,FALSE)')
-            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B2:Z"),8,FALSE)')
+            rowlist.append(f'=ROUNDUP(10*(1-(VLOOKUP(B{rownum},IMPORTRANGE("{attendance.url}","{section}!B:I"),3,FALSE)/VLOOKUP(B2,IMPORTRANGE("{attendance.url}","{section}!B:I"),6,FALSE))))')
+            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B:Z"),6,FALSE)')
+            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B:Z"),8,FALSE)')
             rowlist.append(f'=sum(D{rownum}:F{rownum})')
             rowlist.append('')
-            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B2:Z"),11,FALSE)')
+            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B:Z"),11,FALSE)')
             rowlist.append('')
             rowlist.append(f'=SUM(G{rownum},I{rownum})')
             rowlist.append('')
-            rowlist.append(f'=ROUNDUP(10*(1-(VLOOKUP(B{rownum},IMPORTRANGE("{attendance.url}","{section}!B2:I"),4,FALSE)/VLOOKUP(B2,IMPORTRANGE("{attendance.url}","{section}!B2:I"),7,FALSE))))')
-            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B2:Z"),16,FALSE)')
-            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B2:Z"),18,FALSE)')
+            rowlist.append(f'=ROUNDUP(10*(1-(VLOOKUP(B{rownum},IMPORTRANGE("{attendance.url}","{section}!B:I"),4,FALSE)/VLOOKUP(B2,IMPORTRANGE("{attendance.url}","{section}!B:I"),7,FALSE))))')
+            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B:Z"),16,FALSE)')
+            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B:Z"),18,FALSE)')
             rowlist.append(f'=SUM(M{rownum}:O{rownum})')
             rowlist.append('')
             rowlist.append(f'=SUM(P{rownum},K{rownum})')
             rowlist.append('')
-            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B2:Z"),21,FALSE)')
+            rowlist.append(f'=VLOOKUP(B{rownum},IMPORTRANGE("{assignment.url}","{section}!B:Z"),21,FALSE)')
             rowlist.append('')
             rowlist.append(f'=SUM(T{rownum},R{rownum})')
             rowslist.append(rowlist)
         targsheet.updateRows(rowslist)
-        targsheet['B2'] = f'=IMPORTRANGE("{roster.url}","{section}!A1:B")'
+        targsheet['B2'] = f'=IMPORTRANGE("{roster.url}","{section}!A:B")'
     target[0].delete()
 
 def main(name, rosterUrl, gradebook_template_url,attendance_template_url,assignment_template_url):
     # Collects the class roster and template urls
     classroster = loadRoster(rosterUrl,name)
+
+
+    '''PLEASE REMEMBER TO DO THIS!!!!
+        MAKE SURE ALL LOADED TEMPLATES REFERENCE THE WORKBOOK WITH ALL THE TEMPLATES IN IT'''
+
 
     # Loads the template files
     print('loading gradebook template...')
