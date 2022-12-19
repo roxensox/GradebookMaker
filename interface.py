@@ -10,9 +10,7 @@ root.title('Gradebook Maker')
 
 name = tk.StringVar()
 roster_url = tk.StringVar()
-gb_temp_url = tk.StringVar()
-attend_temp_url = tk.StringVar()
-assign_temp_url = tk.StringVar()
+u_temp_url = tk.StringVar()
 
 ## TODO: Make a function to check validity of the URLs
 def url_check(url_list):
@@ -22,7 +20,7 @@ def url_check(url_list):
 
 ## Calls the main function if valid urls are given
 def submit_clicker():
-    urls = [roster_url.get(),gb_temp_url.get(),attend_temp_url.get(),assign_temp_url.get()]
+    urls = [roster_url.get(),u_temp_url.get()]
 
     valid = url_check(urls)
     
@@ -32,14 +30,13 @@ def submit_clicker():
             title = 'Information',
             message = msg
         )
-
-        main.main(name.get(),roster_url.get(),gb_temp_url.get(),attend_temp_url.get(),assign_temp_url.get())
+        root.destroy()
+        main.main(name.get(),roster_url.get(),u_temp_url.get())
 
         showinfo(
             title = 'Information',
             message = 'Done.'
         )
-        root.destroy()
     else:
         showinfo(
             title = 'Error',
@@ -63,26 +60,12 @@ roster_entry = ttk.Entry(initializer, textvariable=roster_url)
 roster_entry.pack(fill='x', expand=True)
 roster_entry.focus()
 
-gb_temp_label = ttk.Label(initializer, text='Gradebook Template URL:')
+gb_temp_label = ttk.Label(initializer, text='Template URL:')
 gb_temp_label.pack(fill='x', expand=True)
 
-gb_temp_entry = ttk.Entry(initializer, textvariable=gb_temp_url)
+gb_temp_entry = ttk.Entry(initializer, textvariable=u_temp_url)
 gb_temp_entry.pack(fill='x', expand=True)
 gb_temp_entry.focus()
-
-attend_temp_label = ttk.Label(initializer, text='Attendance Template URL:')
-attend_temp_label.pack(fill='x', expand=True)
-
-attend_temp_entry = ttk.Entry(initializer, textvariable=attend_temp_url)
-attend_temp_entry.pack(fill='x', expand=True)
-attend_temp_entry.focus()
-
-assign_temp_label = ttk.Label(initializer, text='Assignment Book Template URL:')
-assign_temp_label.pack(fill='x', expand=True)
-
-assign_temp_entry = ttk.Entry(initializer, textvariable=assign_temp_url)
-assign_temp_entry.pack(fill='x', expand=True)
-assign_temp_entry.focus()
 
 submit_button = ttk.Button(initializer, text='Submit', command=submit_clicker)
 submit_button.pack()

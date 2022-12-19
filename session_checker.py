@@ -13,10 +13,6 @@ def session_checker(classlist):
         meetings_output = class_entry.get()
         if meetings_output == '1' or meetings_output == '2':
             class_dictionary[key] = meetings_output
-            showinfo(
-                title = 'Success',
-                message = 'Received'
-            )
             root.destroy()
         else:
             showinfo(

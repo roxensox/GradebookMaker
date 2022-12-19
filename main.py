@@ -15,25 +15,15 @@ def loadRoster(rosterurl,title):
 # This function makes the attendance book using the roster object, attendance template and a pre-initialized target wb
 def makeAttendance(roster,template,target):
     print('working on attendance book...')
-    sessDict = {}
     sessDict = session_checker.session_checker(roster.sheetTitles)
-    #for sec in roster.sheetTitles:
-    #    check = True
-    #    while check:
-    #        sessions = input(f'How many times per week does {sec} meet? (1 or 2) ')
-    #        if sessions != '1' and sessions != '2':
-    #            print('invalid input. Only 1 or 2 accepted.')
-    #        else:
-    #            sessDict[sec] = sessions
-    #            check = False
     for sec in roster.sheetTitles:
         rows = roster[sec].rowCount+2
         if sessDict[sec] == '1':
-            template[0].copyTo(target)
-            target['Copy of 16Class'].title = sec
+            template['ATTENDANCE_TEMPLATE16'].copyTo(target)
+            target['Copy of ATTENDANCE_TEMPLATE16'].title = sec
         elif sessDict[sec] == '2':
-            template[1].copyTo(target)
-            target['Copy of 32Class'].title = sec
+            template['ATTENDANCE_TEMPLATE32'].copyTo(target)
+            target['Copy of ATTENDANCE_TEMPLATE32'].title = sec
         target[sec]['B3'] = f'=IMPORTRANGE("{roster.url}","{sec}!A:B")'
         target[sec].rowCount = rows
     target[0].delete()
@@ -51,18 +41,28 @@ def makeAssignment(roster,template,target):
         for i in [1,2,3]:
             target.createSheet(f'M{l}Pre-Assign{i}')
             target.createSheet(f'M{l}Post-Assign{i}')
+    # Iterate through each class section and fill the fields in the template
     for sec in roster.sheetTitles:
-        rows = roster[sec].rowCount+1
-        template[0].copyTo(target)
-        target['Copy of TEMPLATE'].title = sec
+        rows = roster[sec].rowCount+2
+        template[1].copyTo(target)
+        target['Copy of ASSIGNMENTS_TEMPLATE'].title = sec
         target[sec]['B3'] = f'=IMPORTRANGE("{roster.url}","{sec}!A:B")'
         target[sec].rowCount = rows
+        for i in range (3,rows+1):
+            # Put score calculation in pre-midterm sections
+            target[sec][f'D{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Pre-Assign1'!$C:$D,2,FALSE)/$D$2,0)*10,0)"
+            target[sec][f'E{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Pre-Assign2'!$C:$D,2,FALSE)/$E$2,0)*10,0)"
+            target[sec][f'F{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Pre-Assign3'!$C:$D,2,FALSE)/$F$2,0)*10,0)"
+            # Put score calculation in post-midterm sections
+            target[sec][f'N{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Post-Assign1'!$C:$D,2,FALSE)/$N$2,0)*10,0)"
+            target[sec][f'O{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Post-Assign2'!$C:$D,2,FALSE)/$O$2,0)*10,0)"
+            target[sec][f'P{i}'] = f"=IFNA(ROUNDUP(VLOOKUP(B{i},'M{sec[0]}Post-Assign3'!$C:$D,2,FALSE)/$P$2,0)*10,0)"
     target[0].delete()
-    print('assignment book generated')
     seclist = list(roster.sheetTitles)
     seclist.reverse()
     for sec in seclist:
         target[sec].index = 0
+    print('assignment book generated')
     return target
 
 # Does the same as the above, but also populates the grading components with formulas that link to the correct sources
@@ -72,7 +72,7 @@ def makeGradebook(roster, template, target, attendance, assignment):
     for section in roster.sheetTitles:
         rows = roster[section].rowCount + 1
         templatesheet.copyTo(target)
-        target['Copy of TEMPLATE'].title = section
+        target['Copy of GB_TEMPLATE'].title = section
         targsheet = target[section]
         targsheet.rowCount = rows
         rowslist = [targsheet.getRow(1)]
@@ -102,25 +102,17 @@ def makeGradebook(roster, template, target, attendance, assignment):
         targsheet['B2'] = f'=IMPORTRANGE("{roster.url}","{section}!A:B")'
     target[0].delete()
 
-def main(name, rosterUrl, gradebook_template_url,attendance_template_url,assignment_template_url):
+def main(name, rosterUrl, gradebook_template_url):
     # Collects the class roster and template urls
     classroster = loadRoster(rosterUrl,name)
 
-
     '''PLEASE REMEMBER TO DO THIS!!!!
-        MAKE SURE ALL LOADED TEMPLATES REFERENCE THE WORKBOOK WITH ALL THE TEMPLATES IN IT'''
-
+    MAKE SURE ALL LOADED TEMPLATES REFERENCE THE WORKBOOK WITH ALL THE TEMPLATES IN IT'''
 
     # Loads the template files
-    print('loading gradebook template...')
-    gradebook_template = ezsheets.Spreadsheet(gradebook_template_url)
-    print('gradebook template loaded')
-    print('loading attendance template...')
-    attendance_template = ezsheets.Spreadsheet(attendance_template_url)
-    print('attendance template loaded')
-    print('loading assignment template...')
-    assignment_template = ezsheets.Spreadsheet(assignment_template_url)
-    print('assignment template loaded')
+    print('loading templates...')
+    u_template = ezsheets.Spreadsheet(gradebook_template_url)
+    print('templates loaded')
 
     # Initializes the target files
     print('initializing gradebook...')
@@ -136,9 +128,9 @@ def main(name, rosterUrl, gradebook_template_url,attendance_template_url,assignm
     print('assignment book initialized')
 
     # Makes the attendance and assignment workbooks
-    attendsheet = makeAttendance(classroster,attendance_template,attendance_target)
-    assignsheet = makeAssignment(classroster,assignment_template,assignment_target)
+    attendsheet = makeAttendance(classroster,u_template,attendance_target)
+    assignsheet = makeAssignment(classroster,u_template,assignment_target)
 
     # Takes the attendance and assignment wb objects and creates the gradebook
-    makeGradebook(classroster,gradebook_template,gradebook,attendsheet,assignsheet)
+    makeGradebook(classroster,u_template,gradebook,attendsheet,assignsheet)
     print('done.')
