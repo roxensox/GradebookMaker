@@ -1,6 +1,7 @@
 # GradebookMaker
 
 Requires credentials json for Google Sheets API
+
 NOTE: When first opening each workbook, you will have to give permission for each field to access the other workbooks
 
 Inputs:
