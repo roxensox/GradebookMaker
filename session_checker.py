@@ -25,15 +25,21 @@ def session_checker(classlist):
         root.geometry = ("300x300")
         root.resizable(False, False)
         root.title = 'Gradebook Maker'
+        
         meetings = tk.StringVar()
+        
         initializer = ttk.Frame(root)
         initializer.pack(padx=10,pady=10, fill='x', expand=True)
+        
         class_label = ttk.Label(initializer, text=f'How many times per week does {class_section} meet? (1 or 2)')
         class_label.pack(fill='x',expand=True)
+        
         class_entry = ttk.Entry(initializer, textvariable=meetings)
         class_entry.pack(fill='x', expand=True)
         class_entry.focus
+        
         accept_button = tk.Button(initializer, text='Accept', command = lambda: accept(classdict, class_section))
         accept_button.pack(fill='x',expand=False)
+
         root.mainloop()
     return classdict
