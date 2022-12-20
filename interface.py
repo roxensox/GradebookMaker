@@ -14,8 +14,6 @@ u_temp_url = tk.StringVar()
 
 ## TODO: Make a function to check validity of the URLs
 def url_check(url_list):
-#    for url in url_list:
-#        print(f'{url}')
     return True
 
 ## Calls the main function if valid urls are given
